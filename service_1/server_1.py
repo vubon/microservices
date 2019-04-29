@@ -6,7 +6,6 @@ from datetime import datetime
 from asyncio_extras import threadpool
 from aiohttp import web
 from pony.orm import *
-from pony.orm.serialization import to_dict
 
 db = Database()
 
@@ -80,7 +79,14 @@ async def home_page(request):
             # user = User.select_by_sql('SELECT * FROM User')
             # users = select(user for user in User)[:]
             users = User.select()[:]
-    return web.json_response(data={"success_code": "SC", "data": [user.to_dict() for user in users]}, status=200)
+    return web.json_response(data={"success_code": "SC", "data": [json.dumps(user.to_dict()) for user in users]}, status=200)
+
+
+async def transactions(request):
+    async with threadpool():
+        with db_session:
+            trans = Transactions.select()[:]
+    return web.json_response(data={"success_code": "TR200", "data": [trn.to_dict() for trn in trans]}, status=200)
 
 
 async def transaction_data(request):
@@ -99,4 +105,5 @@ if __name__ == '__main__':
     app = web.Application(loop=loop)
     app.router.add_route('GET', '/', home_page)
     app.router.add_route('POST', '/create-transaction/', transaction_data)
+    app.router.add_route('GET', '/transactions/', transactions)
     web.run_app(app, port=8000)
