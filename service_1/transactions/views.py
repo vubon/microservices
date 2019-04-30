@@ -1,7 +1,7 @@
 import json
 from asyncio_extras import threadpool
 from aiohttp import web
-from .models import Transactions, create_transaction, User, db_session
+from .models import Transactions, create_transaction, User, db_session, test_create
 
 
 async def home_page(request):
@@ -10,8 +10,13 @@ async def home_page(request):
             # user = User.select_by_sql('SELECT * FROM User')
             # users = select(user for user in User)[:]
             users = User.select()[:]
-    return web.json_response(data={"success_code": "SC", "data": [json.dumps(user.to_dict()) for user in users]},
+    return web.json_response(data={"success_code": "SC", "data": [user.to_dict() for user in users]},
                              status=200)
+
+
+async def create_user(request):
+    await test_create(await request.json())
+    return web.json_response(data={"success_code": "UR201"}, status=201)
 
 
 async def transactions(request):

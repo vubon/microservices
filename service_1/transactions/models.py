@@ -60,15 +60,16 @@ async def create_transaction(data):
                 )
 
 
-def test(data):
+async  def test_create(data):
     """
     :param data:
     :return:
     """
     print(data)
-    for item in data:
+    async with threadpool():
         with db_session:
-            user_obj = User(
-                name=item['name']
-            )
-            print(user_obj)
+            for item in data:
+                with db_session:
+                     User(
+                        name=item['name']
+                    )
