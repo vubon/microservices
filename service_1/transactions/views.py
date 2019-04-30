@@ -1,3 +1,4 @@
+import sys
 import datetime
 import json
 import decimal
@@ -19,8 +20,6 @@ class DecimalEncoder(json.JSONEncoder):
 async def home_page(request):
     async with threadpool():
         with db_session:
-            # user = User.select_by_sql('SELECT * FROM User')
-            # users = select(user for user in User)[:]
             users = User.select()[:]
     return web.json_response(data={"success_code": "SC", "data": [user.to_dict() for user in users]},
                              status=200)
@@ -31,7 +30,6 @@ async def create_user(request):
     return web.json_response(data={"success_code": "UR201"}, status=201)
 
 
-# @get_object_labels
 async def transactions(request):
     async with threadpool():
         with db_session:
