@@ -1,13 +1,18 @@
-import json
+# class MyEntity(db.Entity):
+#     attr1 = Required(int)  # Usual INT column
+#     attr2 = Required(long)  # BIGINT column
+#     attr3 = Required(int, sql_type='BIGINT')  # alternative way
+
+# attr1 = Required(int, size=8)  # 8 bit - TINYINT in MySQL
+# attr2 = Required(int, size=16)  # 16 bit - SMALLINT in MySQL
+# attr3 = Required(int, size=24)  # 24 bit - MEDIUMINT in MySQL
+# attr4 = Required(int, size=32)  # 32 bit - INTEGER in MySQL
+# attr5 = Required(int, size=64)  # 64 bit - BIGINT in MySQL
 from decimal import Decimal
-import asyncio
 from datetime import datetime
-
 from asyncio_extras import threadpool
-from aiohttp import web
 from pony.orm import *
-
-db = Database()
+from service_1.transactions.db import db
 
 
 class Transactions(db.Entity):
@@ -30,10 +35,6 @@ class Transactions(db.Entity):
 class User(db.Entity):
     id = PrimaryKey(int, auto=True)
     name = Required(str)
-
-
-db.bind('sqlite', './test.sqlite', create_db=True)
-db.generate_mapping(create_tables=True)
 
 
 async def create_transaction(data):
@@ -71,39 +72,3 @@ def test(data):
                 name=item['name']
             )
             print(user_obj)
-
-
-async def home_page(request):
-    async with threadpool():
-        with db_session:
-            # user = User.select_by_sql('SELECT * FROM User')
-            # users = select(user for user in User)[:]
-            users = User.select()[:]
-    return web.json_response(data={"success_code": "SC", "data": [json.dumps(user.to_dict()) for user in users]}, status=200)
-
-
-async def transactions(request):
-    async with threadpool():
-        with db_session:
-            trans = Transactions.select()[:]
-    return web.json_response(data={"success_code": "TR200", "data": [trn.to_dict() for trn in trans]}, status=200)
-
-
-async def transaction_data(request):
-    """
-    :param request:
-    :return:
-    """
-    # test(await request.json())
-    await create_transaction(await request.json())
-
-    return web.json_response(data={"succes_code": "TR201"}, status=201)
-
-
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    app = web.Application(loop=loop)
-    app.router.add_route('GET', '/', home_page)
-    app.router.add_route('POST', '/create-transaction/', transaction_data)
-    app.router.add_route('GET', '/transactions/', transactions)
-    web.run_app(app, port=8000)
