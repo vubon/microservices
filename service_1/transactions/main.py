@@ -7,12 +7,12 @@ from service_1.transactions.db import init_db
 # Route setup
 from service_1.transactions.routes import setup_routes
 
+from service_1.transactions.settings import load_config, BASE_DIR
 
-# from service_1.transactions.settings import load_config
 
-
-async def init_app():
+async def init_app(config):
     """
+    :param: config
     :return:
     """
     # setup main application
@@ -20,7 +20,7 @@ async def init_app():
     app = web.Application(loop=loop)
 
     # Database init
-    await init_db()
+    await init_db(config['postgres'])
 
     # setup routes
     setup_routes(app)
@@ -28,14 +28,17 @@ async def init_app():
     return app
 
 
-def main():
+def main(config):
     """
+    :param: config
     :return:
     """
     # config = load_config()
-    app = init_app()
-    web.run_app(app, port=8000)
+    app = init_app(config)
+    web.run_app(app, port=config['port'], host=config['host'])
 
 
 if __name__ == '__main__':
-    main()
+    # collect configuration
+    config_data = load_config(BASE_DIR + '/config/config.yml')
+    main(config_data)
