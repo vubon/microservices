@@ -1,7 +1,19 @@
+import datetime
 import json
+import decimal
 from asyncio_extras import threadpool
 from aiohttp import web
-from .models import Transactions, create_transaction, User, db_session, test_create
+from pony.orm import *
+from .models import Transactions, create_transaction, User, db_session, test_create, db
+
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, decimal.Decimal):
+            return str(obj)
+        elif isinstance(obj, datetime.datetime):
+            return str(obj)
+        return json.JSONEncoder.default(self, obj)
 
 
 async def home_page(request):
@@ -19,11 +31,18 @@ async def create_user(request):
     return web.json_response(data={"success_code": "UR201"}, status=201)
 
 
+# @get_object_labels
 async def transactions(request):
     async with threadpool():
         with db_session:
-            trans = Transactions.select()[:]
-    return web.json_response(data={"success_code": "TR200", "data": [trn.to_dict() for trn in trans]}, status=200)
+            trans = [json.dumps(trn.to_dict(), cls=DecimalEncoder) for trn in Transactions.select()[:]]
+    return web.json_response(
+        data={
+            "success_code": "TR200",
+            "data": [json.loads(trn) for trn in trans],
+        },
+        status=200
+    )
 
 
 async def create_transaction_view(request):

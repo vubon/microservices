@@ -1,3 +1,4 @@
+## Pony ORM
 # class MyEntity(db.Entity):
 #     attr1 = Required(int)  # Usual INT column
 #     attr2 = Required(long)  # BIGINT column
@@ -8,6 +9,8 @@
 # attr3 = Required(int, size=24)  # 24 bit - MEDIUMINT in MySQL
 # attr4 = Required(int, size=32)  # 32 bit - INTEGER in MySQL
 # attr5 = Required(int, size=64)  # 64 bit - BIGINT in MySQL
+
+
 from decimal import Decimal
 from datetime import datetime
 from asyncio_extras import threadpool
@@ -60,16 +63,15 @@ async def create_transaction(data):
                 )
 
 
-async  def test_create(data):
+async def test_create(data):
     """
     :param data:
     :return:
     """
-    print(data)
     async with threadpool():
         with db_session:
             for item in data:
                 with db_session:
-                     User(
+                    User(
                         name=item['name']
                     )
